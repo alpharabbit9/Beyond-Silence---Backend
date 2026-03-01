@@ -72,7 +72,7 @@ export const register = async (req, res) => {
       role: "user"
     });
 
-    const verificationUrl = `http://localhost:5000/api/auth/verify-email/${rawToken}`;
+    const verificationUrl = `https://beyond-silence-seven.vercel.app/api/auth/verify-email/${rawToken}`;
 
     await sendEmail(
       user.email,
