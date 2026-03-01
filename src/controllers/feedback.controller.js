@@ -1,34 +1,42 @@
 import Feedback from "../models/feedback.model.js";
 import cloudinary from "../config/cloudinary.js";
-
+import streamifier from "streamifier";
 
 // USER → Add feedback
 export const addFeedback = async (req, res) => {
   try {
-    console.log("BODY:", req.body);
-    console.log("FILE:", req.file);
-
     const { type, message } = req.body;
 
     if (!type) {
       return res.status(400).json({ message: "Type is required" });
     }
 
-    let fileData = null;
+    let mediaUrl = null;
 
+    // 🔥 If file exists → upload to Cloudinary
     if (req.file) {
-      fileData = {
-        originalName: req.file.originalname,
-        mimeType: req.file.mimetype,
-        size: req.file.size,
-        buffer: req.file.buffer // THIS is the file
+      const uploadFromBuffer = () => {
+        return new Promise((resolve, reject) => {
+          const stream = cloudinary.uploader.upload_stream(
+            { folder: "feedbacks" }, // optional folder name
+            (error, result) => {
+              if (error) reject(error);
+              else resolve(result);
+            }
+          );
+
+          streamifier.createReadStream(req.file.buffer).pipe(stream);
+        });
       };
+
+      const result = await uploadFromBuffer();
+      mediaUrl = result.secure_url; // ✅ this is what you save
     }
 
     const feedback = await Feedback.create({
       type,
       message,
-      file: fileData,
+      mediaUrl,   // ✅ now this will be saved
       user: req.user.id
     });
 

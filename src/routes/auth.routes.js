@@ -1,13 +1,23 @@
 import express from "express";
-import { register, login } from "../controllers/auth.controller.js";
+import { register, login, verifyEmail } from "../controllers/auth.controller.js";
 import authMiddleware from "../middleware/auth.middleware.js";
 import roleMiddleware from "../middleware/role.middleware.js";
+import upload from "../middleware/upload.middleware.js";
 
 const router = express.Router();
 
 // Public
-router.post("/register", register);
+router.post(
+  "/register",
+  upload.single("profilePicture"),
+  register
+);
+
+// Public
 router.post("/login", login);
+
+// Email verification
+router.get("/verify-email/:token", verifyEmail);
 
 // Protected demo dashboards
 router.get(
