@@ -112,3 +112,41 @@ export const rejectFeedback = async (req, res) => {
 
   res.json(feedback);
 };
+
+// USER & ADMIN → Delete feedback (admin can delete any, user can delete only own)
+export const deleteFeedback = async (req, res) => {
+  try {
+    const feedback = await Feedback.findById(req.params.id);
+
+    if (!feedback) {
+      return res.status(404).json({
+        success: false,
+        message: "Feedback not found"
+      });
+    }
+
+    // ✅ If user is NOT admin → check ownership
+    if (req.user.role !== "admin") {
+      if (feedback.user.toString() !== req.user.id) {
+        return res.status(403).json({
+          success: false,
+          message: "You can delete only your own feedback"
+        });
+      }
+    }
+
+    await feedback.deleteOne();
+
+    res.json({
+      success: true,
+      message: "Feedback deleted successfully"
+    });
+
+  } catch (error) {
+    console.error("DELETE FEEDBACK ERROR:", error);
+    res.status(500).json({
+      success: false,
+      message: "Server error"
+    });
+  }
+};

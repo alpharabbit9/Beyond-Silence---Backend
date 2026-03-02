@@ -8,7 +8,8 @@ import {
   getHistory,
   getAllFeedback,
   approveFeedback,
-  rejectFeedback
+  rejectFeedback,
+  deleteFeedback
 } from "../controllers/feedback.controller.js";
 
 const router = express.Router();
@@ -17,10 +18,14 @@ const router = express.Router();
 router.post("/", authMiddleware, upload.single("file"), addFeedback);
 router.get("/my", authMiddleware, getMyFeedback);
 router.get("/history", authMiddleware, getHistory);
+// USER → delete own feedback
+router.delete("/:id", authMiddleware, deleteFeedback);
 
 // ADMIN
 router.get("/admin/all", authMiddleware, roleMiddleware("admin"), getAllFeedback);
 router.patch("/admin/:id/approve", authMiddleware, roleMiddleware("admin"), approveFeedback);
 router.patch("/admin/:id/reject", authMiddleware, roleMiddleware("admin"), rejectFeedback);
+// ADMIN → delete any feedback
+router.delete("/admin/:id", authMiddleware, roleMiddleware("admin"), deleteFeedback);
 
 export default router;
